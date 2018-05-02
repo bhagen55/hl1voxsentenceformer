@@ -1,5 +1,12 @@
 # Takes strings as input and attempts to speak them
 # using HL1 vox voice files.
+
+# Alarm sounds:
+#	- deeoo
+#	- doop
+#	- woop
+#	- bizwarn
+#	- buzwarn
 import sys
 from playsound import playsound
 
@@ -14,8 +21,15 @@ def saysentence(saystring):
 	words = saystring.split()
 
 	for word in words:
-		playsound(soundpath + word + filetype)
+		if word[-3:] == 'ing':
+			play(word[:-3])
+			play('ing')
+		else:
+			play(word)
 
+# Wrapper to add path and filetype
+def play(word):
+	playsound(soundpath + word + filetype)
 
 if __name__ == "__main__":
 	saystring = sys.argv[1];
