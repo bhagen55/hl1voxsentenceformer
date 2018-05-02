@@ -25,6 +25,9 @@ def saysentence(saystring):
 			if word[-3:] == 'ing':
 				play(word[:-3])
 				play('ing')
+			if word[-1:] == ',':
+				play(word[:-1])
+				play(comma)
 			else:
 				play(word)
 		except:
