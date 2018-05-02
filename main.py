@@ -21,12 +21,14 @@ def saysentence(saystring):
 	words = saystring.split()
 
 	for word in words:
-		if word[-3:] == 'ing':
-			play(word[:-3])
-			play('ing')
-		else:
-			play(word)
-
+		try:
+			if word[-3:] == 'ing':
+				play(word[:-3])
+				play('ing')
+			else:
+				play(word)
+		except:
+			print("Couldn't find " + word)
 # Wrapper to add path and filetype
 def play(word):
 	playsound(soundpath + word + filetype)
