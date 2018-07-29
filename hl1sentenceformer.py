@@ -9,33 +9,80 @@
 #	- buzwarn
 import sys
 from playsound import playsound
+from pydub import AudioSegment
+from slugify import slugify
+import os
 
-soundpath = "vox/"
-filetype = ".wav"
+soundpath = "static/"
+filetype = ".mp3"
+combined_path = "static/cache/"
+
 comma = "_comma"
 period = "_period"
+ing = "ing"
 
 
-# Takes a string and forms it into filepaths of sounds
-def saysentence(saystring):
-	words = saystring.split()
+# Takes sentence and seperates into individual words
+def convertsentence(sentence):
+    words = sentence.split()
+    output = []
 
-	for word in words:
-		try:
-			if word[-3:] == 'ing':
-				play(word[:-3])
-				play('ing')
-			if word[-1:] == ',':
-				play(word[:-1])
-				play(comma)
-			else:
-				play(word)
-		except:
-			print("Couldn't find " + word)
+    for word in words:
+        # if word[-3:] == 'ing':
+        # 	output.append(word[:-3])
+        # 	output.append(ing)
+        if word[-1:] == ",":
+            output.append(word[:-1])
+            output.append(comma)
+        elif word[-1:] == ".":
+            output.append(word[:-1])
+            output.append(period)
+        else:
+            output.append(word)
+    return output
+
+
+# Play sentence
+def playwords(sentence):
+    words = convertsentence(sentence)
+    for word in words:
+        play(word)
+
+
 # Wrapper to add path and filetype
 def play(word):
-	playsound(soundpath + word + filetype)
+    playsound(soundpath + word + filetype)
+
+
+# Save sentence as an mp3
+def savetomp3(sentence):
+    words = convertsentence(sentence)
+    sentence = " ".join(words)
+    if os.path.isfile(combined_path + slugify(sentence) + ".mp3"):
+        print("Sentence already in cache, not re-creating")
+        return(combined_path + slugify(sentence) + ".mp3")
+    else:
+        words = convertsentence(sentence)
+        playlist = AudioSegment.silent(duration=500)
+        for word in words:
+            if not os.path.isfile(soundpath + word + filetype):
+                print(word + " does not exist, skipping")
+                sentence = sentence.replace(word, '')
+            else:
+                word_mp3 = AudioSegment.from_mp3(soundpath + word + filetype)
+                playlist = playlist.append(word_mp3)
+                playlist = playlist.append(AudioSegment.silent(duration=300))
+        if not playlist:
+            print("Cannot say any of the sentence")
+            return None
+        else:
+            playlist.export(combined_path + slugify(sentence) + ".mp3", format="mp3", bitrate="100k")
+            return(combined_path + slugify(sentence) + ".mp3")
+
+def main():
+    saystring = sys.argv[1];
+    # playwords(saystring)
+    savetomp3(saystring)
 
 if __name__ == "__main__":
-	saystring = sys.argv[1];
-	saysentence(saystring)
+    main()
