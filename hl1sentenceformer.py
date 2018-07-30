@@ -69,10 +69,9 @@ def savetomp3(sentence):
 	if os.path.isfile(combined_path + slugify(sentence) + ".mp3"):
 		print("Sentence already in cache, not re-creating")
 		path = combined_path + slugify(sentence) + ".mp3"
-		return {'path': path, 'sentence': converted['sentence']}
 	elif os.path.isfile(soundpath + slugify(sentence) + ".mp3"):
 		print("Sentence is a static word, not adding to cache")
-		return(soundpath + slugify(sentence) + ".mp3")
+		path = soundpath + slugify(sentence) + ".mp3"
 	else:
 		words = converted['generate']
 		playlist = AudioSegment.silent(duration=500)
@@ -86,11 +85,11 @@ def savetomp3(sentence):
 				playlist = playlist.append(AudioSegment.silent(duration=300))
 		if not playlist:
 			print("Cannot say any of the sentence")
-			return None
+			path = None
 		else:
 			playlist.export(combined_path + slugify(sentence) + ".mp3", format="mp3", bitrate="100k")
 			path = combined_path + slugify(sentence) + ".mp3"
-			return {'path': path, 'sentence': converted['sentence']}
+	return {'path': path, 'sentence': converted['sentence']}
 
 
 def getcachedsentences():
