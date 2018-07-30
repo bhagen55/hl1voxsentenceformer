@@ -12,6 +12,7 @@ import sys
 from pydub import AudioSegment
 from slugify import slugify
 import os
+from pathlib import Path
 
 soundpath = "static/"
 filetype = ".mp3"
@@ -24,23 +25,28 @@ ing = "ing"
 
 # Takes sentence and seperates into individual words
 # converts commas and periods into their respective word
-def convertsentence(sentence):
+def convert_sentence(sentence):
 	words = sentence.split()
-	output = []
+	gen_output = []
+	sent_output = []
 
 	for word in words:
-		# if word[-3:] == 'ing':
-		# 	output.append(word[:-3])
-		# 	output.append(ing)
-		if word[-1:] == ",":
-			output.append(word[:-1])
-			output.append(comma)
-		elif word[-1:] == ".":
-			output.append(word[:-1])
-			output.append(period)
-		else:
-			output.append(word)
-	return output
+		if word[-1:] == "," and check_available(word[:-1]):
+			gen_output.append(word[:-1])
+			gen_output.append(comma)
+			sent_output.append(word)
+		elif word[-1:] == "." and check_available(word[:-1]):
+			gen_output.append(word[:-1])
+			gen_output.append(period)
+			sent_output.append(word)
+		elif check_available(word):
+			gen_output.append(word)
+			sent_output.append(word)
+	return {'generate': gen_output, 'sentence': str.join(" ", sent_output)}
+
+
+def check_available(word):
+	return os.path.isfile(soundpath + word + filetype)
 
 
 # # Play sentence
@@ -57,16 +63,18 @@ def convertsentence(sentence):
 
 # Save sentence as an mp3 with the final text included
 def savetomp3(sentence):
-	words = convertsentence(sentence)
-	sentence = " ".join(words)
+	converted = convert_sentence(sentence)
+	print(converted)
+	sentence = " ".join(converted['generate'])
 	if os.path.isfile(combined_path + slugify(sentence) + ".mp3"):
 		print("Sentence already in cache, not re-creating")
-		return(combined_path + slugify(sentence) + ".mp3")
+		path = combined_path + slugify(sentence) + ".mp3"
+		return {'path': path, 'sentence': converted['sentence']}
 	elif os.path.isfile(soundpath + slugify(sentence) + ".mp3"):
 		print("Sentence is a static word, not adding to cache")
 		return(soundpath + slugify(sentence) + ".mp3")
 	else:
-		words = convertsentence(sentence)
+		words = converted['generate']
 		playlist = AudioSegment.silent(duration=500)
 		for word in words:
 			if not os.path.isfile(soundpath + word + filetype):
@@ -82,12 +90,8 @@ def savetomp3(sentence):
 		else:
 			playlist.export(combined_path + slugify(sentence) + ".mp3", format="mp3", bitrate="100k")
 			path = combined_path + slugify(sentence) + ".mp3"
-			return {'path': combined_path, 'sentence': act_sentence}
+			return {'path': path, 'sentence': converted['sentence']}
 
-# def main():
-#     saystring = sys.argv[1];
-#     # playwords(saystring)
-#     savetomp3(saystring)
 
-# if __name__ == "__main__":
-#     main()
+def getcachedsentences():
+	return os.listdir(combined_path)
