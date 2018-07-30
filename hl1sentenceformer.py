@@ -14,9 +14,9 @@ from slugify import slugify
 import os
 from pathlib import Path
 
-soundpath = "static/"
+soundpath = "./static/"
 filetype = ".mp3"
-combined_path = "static/cache/"
+combined_path = "./static/cache/"
 
 comma = "_comma"
 period = "_period"
@@ -46,7 +46,7 @@ def convert_sentence(sentence):
 
 
 def check_available(word):
-	return os.path.isfile(soundpath + word + filetype)
+	return os.path.isfile(Path(soundpath + word + filetype))
 
 
 # # Play sentence
@@ -63,8 +63,8 @@ def check_available(word):
 
 # Save sentence as an mp3 with the final text included
 def savetomp3(sentence):
+	sentence = sentence.lower()
 	converted = convert_sentence(sentence)
-	print(converted)
 	sentence = " ".join(converted['generate'])
 	if os.path.isfile(combined_path + slugify(sentence) + ".mp3"):
 		print("Sentence already in cache, not re-creating")
